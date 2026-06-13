@@ -17,7 +17,7 @@ function mockNodes(): ClusterNode[] {
 
 function mockTasks(nodes: ClusterNode[]): Task[] {
   const names = ['data_sync', 'email_batch', 'report_gen', 'cache_warm', 'log_rotate', 'db_backup', 'index_rebuild', 'health_check']
-  return Array.from({ length: 12 }, (_, i) => {
+  const tasks = Array.from({ length: 12 }, (_, i) => {
     const status: TaskStatus[] = ['pending', 'running', 'success', 'failed']
     const s = status[Math.floor(Math.random() * 4)]
     const node = nodes[Math.floor(Math.random() * nodes.length)]
@@ -35,6 +35,42 @@ function mockTasks(nodes: ClusterNode[]): Task[] {
       logs: [`[INFO] Task ${names[i % names.length]} started`, `[INFO] Processing on ${node.name}`],
     }
   })
+  const longNameTask1: Task = {
+    id: 'task-long-001',
+    name: '这是一个用于验证长名称省略号功能的超级长任务名称测试案例ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
+    status: 'running',
+    node: nodes[0].name,
+    createdAt: Date.now() - 120000,
+    startedAt: Date.now() - 60000,
+    retries: 0,
+    maxRetries: 3,
+    logs: ['[INFO] Long name task started'],
+  }
+  const longNameTask2: Task = {
+    id: 'task-long-002',
+    name: '分布式任务调度系统每日全量数据同步与备份归档任务WorkerNodeAlphaBetaGammaDelta',
+    status: 'success',
+    node: nodes[1].name,
+    createdAt: Date.now() - 3600000,
+    startedAt: Date.now() - 3500000,
+    completedAt: Date.now() - 60000,
+    retries: 1,
+    maxRetries: 3,
+    duration: 2900000,
+    logs: ['[INFO] Sync completed'],
+  }
+  const longNodeTask: Task = {
+    id: 'task-long-003',
+    name: '节点列长名称测试',
+    status: 'pending',
+    node: 'super-long-cluster-worker-node-name-for-testing-ellipsis-feature',
+    createdAt: Date.now() - 30000,
+    retries: 0,
+    maxRetries: 3,
+    logs: ['[INFO] Queued'],
+  }
+  tasks.push(longNameTask1, longNameTask2, longNodeTask)
+  return tasks
 }
 
 const initialNodes = mockNodes()

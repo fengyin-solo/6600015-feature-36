@@ -117,7 +117,15 @@ export default function Dashboard() {
             </Row>
           )},
           { key: 'tasks', label: '任务列表', children: (
-            <Table dataSource={store.tasks} columns={taskColumns} rowKey="id" size="small" pagination={{ pageSize: 10 }} tableLayout="fixed" />
+            <Table
+              dataSource={store.tasks}
+              columns={taskColumns}
+              rowKey="id"
+              size="small"
+              pagination={{ pageSize: 10 }}
+              tableLayout="fixed"
+              scroll={{ x: 910 }}
+            />
           )},
           { key: 'nodes', label: '集群节点', children: (
             <Row gutter={16}>
