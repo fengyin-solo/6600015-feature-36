@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Layout, Tabs, Statistic, Row, Col, Card, Tag, Button, Input, Table, Drawer, Descriptions, Space, Progress } from 'antd'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import { Layout, Tabs, Statistic, Row, Col, Card, Tag, Button, Input, Table, Drawer, Descriptions, Space, Progress, Tooltip } from 'antd'
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import { useTaskStore } from '../store/tasks'
 import type { Task, TaskStatus } from '../types'
 
@@ -17,12 +17,32 @@ export default function Dashboard() {
 
   const taskColumns = [
     { title: 'ID', dataIndex: 'id', key: 'id', width: 100 },
-    { title: '名称', dataIndex: 'name', key: 'name' },
-    { title: '状态', dataIndex: 'status', key: 'status', render: (s: TaskStatus) => <Tag color={STATUS_COLORS[s]}>{s}</Tag> },
-    { title: '节点', dataIndex: 'node', key: 'node' },
-    { title: '重试', key: 'retries', render: (_: any, r: Task) => `${r.retries}/${r.maxRetries}` },
-    { title: '耗时', key: 'duration', render: (_: any, r: Task) => r.duration ? `${(r.duration / 1000).toFixed(1)}s` : '-' },
-    { title: '操作', key: 'actions', render: (_: any, r: Task) => (
+    {
+      title: '名称',
+      dataIndex: 'name',
+      key: 'name',
+      width: 200,
+      render: (text: string) => (
+        <Tooltip title={text} placement="topLeft">
+          <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+        </Tooltip>
+      ),
+    },
+    { title: '状态', dataIndex: 'status', key: 'status', width: 100, render: (s: TaskStatus) => <Tag color={STATUS_COLORS[s]}>{s}</Tag> },
+    {
+      title: '节点',
+      dataIndex: 'node',
+      key: 'node',
+      width: 150,
+      render: (text: string) => (
+        <Tooltip title={text} placement="topLeft">
+          <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+        </Tooltip>
+      ),
+    },
+    { title: '重试', key: 'retries', width: 80, render: (_: any, r: Task) => `${r.retries}/${r.maxRetries}` },
+    { title: '耗时', key: 'duration', width: 100, render: (_: any, r: Task) => r.duration ? `${(r.duration / 1000).toFixed(1)}s` : '-' },
+    { title: '操作', key: 'actions', width: 180, render: (_: any, r: Task) => (
       <Space>
         {r.status === 'failed' && <Button size="small" type="primary" onClick={() => store.retryTask(r.id)}>重试</Button>}
         {r.status === 'running' && <Button size="small" danger onClick={() => store.cancelTask(r.id)}>取消</Button>}
@@ -64,7 +84,7 @@ export default function Dashboard() {
                     <AreaChart data={store.metrics}>
                       <XAxis dataKey="time" tickFormatter={t => new Date(t).toLocaleTimeString()} fontSize={10} />
                       <YAxis fontSize={10} />
-                      <Tooltip labelFormatter={t => new Date(t as number).toLocaleString()} />
+                      <RechartsTooltip labelFormatter={t => new Date(t as number).toLocaleString()} />
                       <Area type="monotone" dataKey="runningTasks" stroke="#1890ff" fill="#1890ff" fillOpacity={0.3} />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -76,7 +96,7 @@ export default function Dashboard() {
                     <LineChart data={store.metrics}>
                       <XAxis dataKey="time" tickFormatter={t => new Date(t).toLocaleTimeString()} fontSize={10} />
                       <YAxis domain={[0, 100]} fontSize={10} />
-                      <Tooltip labelFormatter={t => new Date(t as number).toLocaleString()} />
+                      <RechartsTooltip labelFormatter={t => new Date(t as number).toLocaleString()} />
                       <Line type="monotone" dataKey="successRate" stroke="#52c41a" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -88,7 +108,7 @@ export default function Dashboard() {
                     <AreaChart data={store.metrics}>
                       <XAxis dataKey="time" tickFormatter={t => new Date(t).toLocaleTimeString()} fontSize={10} />
                       <YAxis fontSize={10} />
-                      <Tooltip />
+                      <RechartsTooltip />
                       <Area type="monotone" dataKey="avgLatency" stroke="#faad14" fill="#faad14" fillOpacity={0.2} />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -97,7 +117,7 @@ export default function Dashboard() {
             </Row>
           )},
           { key: 'tasks', label: '任务列表', children: (
-            <Table dataSource={store.tasks} columns={taskColumns} rowKey="id" size="small" pagination={{ pageSize: 10 }} />
+            <Table dataSource={store.tasks} columns={taskColumns} rowKey="id" size="small" pagination={{ pageSize: 10 }} tableLayout="fixed" />
           )},
           { key: 'nodes', label: '集群节点', children: (
             <Row gutter={16}>
